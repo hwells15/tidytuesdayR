@@ -11,13 +11,41 @@ global_economic_activity <- tuesdata$global_economic_activity
 
 #context in README: https://github.com/rfordatascience/tidytuesday/blob/master/data/2023/2023-09-12/readme.md
 
-#map country and region names from country_regions to all_countries
-#replace country_iso3 in all_countries with country_name in country_regions
+##CHALLENGE: map country and region names from country_regions to all_countries
 
-#get list of region names and the code each relates to
-regions <- unique(select(country_regions, region_code, region_name))
-#get list of country names and the code each relates to
-#not using alternative country names as these columns contain NA values
-countries <- unique(select(country_regions, country_iso3, country_name))
+#replace country_iso3 in all_countries with country_name in country_regions
+#get list of country names with the country code and region name they relate to
+country_regions1 <- select(country_regions, region_name, country_name, country_iso3)
+#left_join keeps all observations in x (all_countries)
+all_countries1 <- all_countries %>% 
+  left_join(y = country_regions1, by = "country_iso3") %>% 
+  #remove unneeded columns
+  select(-c("country_iso3", "region_code"))
+
+##CHALLENGE: for the Caribbean as a whole, display the average time spent each day for activities at the category level
+
+#filter all_countries1 to get data for Caribbean only
+caribbean <- all_countries1 %>% 
+  filter(region_name == "Caribbean") %>%
+  #remove unneeded columns and sort by country_name and category
+  select(Category, hoursPerDayCombined, country_name) %>% 
+  arrange(country_name, Category)
+
+#calculate the total time spent per country in each category
+caribbean_totals <- caribbean %>% 
+  #group by country name and Category
+  group_by(country_name, Category) %>% 
+  #create new variable whose values are the sum of hours for each group
+  mutate(HPD_categoryTotal = sum(hoursPerDayCombined)) %>% 
+  #ungroup and remove unneeded column
+  ungroup() %>% 
+  select(-hoursPerDayCombined) %>% 
+  #refine data
+  unique()
+
+#for all countries in the Caribbean, calculate the average time spent on each category
+caribbean_averages
+
+
 
 
