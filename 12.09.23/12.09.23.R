@@ -38,14 +38,27 @@ caribbean_totals <- caribbean %>%
   #create new variable whose values are the sum of hours for each group
   mutate(HPD_categoryTotal = sum(hoursPerDayCombined)) %>% 
   #ungroup and remove unneeded column
+  #ungroup means that data can be treated as a whole again
   ungroup() %>% 
   select(-hoursPerDayCombined) %>% 
   #refine data
   unique()
 
 #for all countries in the Caribbean, calculate the average time spent on each category
-caribbean_averages
+caribbean_averages <- caribbean_totals %>% 
+  group_by(Category) %>% 
+  mutate(HPD_categoryAverage = mean(HPD_categoryTotal)) %>% 
+  ungroup() %>% 
+  select(Category, HPD_categoryAverage) %>% 
+  unique()
 
+#to confirm my code is correct, the sum of the averages comes to ~24 hours!
+check <- sum(caribbean_averages$HPD_categoryAverage)
 
+#display data in (basic) bar chart
+ggplot(caribbean_averages, aes(x = Category, y = HPD_categoryAverage)) +
+  geom_bar(stat = "identity")
 
+#CHALLENGE: make the bar chart above a bit more detailed and visually appealing
 
+#CHALLENGE: put the above code into a function that returns plot displaying data for any given country
